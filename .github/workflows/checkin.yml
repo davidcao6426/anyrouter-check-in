@@ -43,6 +43,9 @@ jobs:
         uv sync --frozen
         echo "✅ 环境初始化完成"
 
+    - name: AgentRouter browser 单元测试
+      run: uv run pytest tests/test_agentrouter_browser.py -q
+
     - name: 安装系统依赖
       run: |
         sudo apt-get update
@@ -133,7 +136,7 @@ jobs:
         BARK_KEY: ${{ secrets.BARK_KEY }}
         BARK_SERVER: ${{ secrets.BARK_SERVER }}
       run: |
-        xvfb-run -a --server-args="-screen 0 1920x1080x24" uv run checkin.py
+        xvfb-run -a --server-args="-screen 0 1920x1080x24" uv run browser_checkin.py
 
     - name: 上传调试截图
       if: always() && env.DEBUG_MODE == 'true'
