@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from urllib.parse import unquote, urlsplit
 
 
 def get_proxy_server(*, use_proxy: bool = True) -> str | None:
@@ -14,7 +15,29 @@ def get_proxy_server(*, use_proxy: bool = True) -> str | None:
 
 
 def get_playwright_proxy(*, use_proxy: bool = True) -> dict[str, str] | None:
-	server = get_proxy_server(use_proxy=use_proxy)
-	if not server:
+	proxy_url = get_proxy_server(use_proxy=use_proxy)
+	if not proxy_url:
 		return None
-	return {'server': server}
+
+	parsed = urlsplit(proxy_url)
+	if parsed.username is None:
+		return {'server': proxy_url}
+
+	if not parsed.scheme or not parsed.hostname:
+		return {'server': proxy_url}
+
+	host = parsed.hostname
+	if ':' in host and not host.startswith('['):
+		host = f'[{host}]'
+
+	server = f'{parsed.scheme}://{host}'
+	if parsed.port is not None:
+		server += f':{parsed.port}'
+
+	proxy = {
+		'server': server,
+		'username': unquote(parsed.username),
+	}
+	if parsed.password is not None:
+		proxy['password'] = unquote(parsed.password)
+	return proxy
