@@ -89,10 +89,13 @@ jobs:
       run: bash scripts/setup_mihomo_proxy.sh
 
     - name: 测试直连代理
-      if: ${{ secrets.CHECKIN_PROXY_URL != '' }}
       env:
         CHECKIN_PROXY_URL: ${{ secrets.CHECKIN_PROXY_URL }}
       run: |
+        if [ -z "$CHECKIN_PROXY_URL" ]; then
+          echo "[INFO] CHECKIN_PROXY_URL not set, skip direct proxy test"
+          exit 0
+        fi
         echo "Testing CHECKIN_PROXY_URL..."
         PROXY_IP=$(curl \
           --fail \
